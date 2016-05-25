@@ -168,4 +168,79 @@
   
   (format t "Day 5 B: ~a~%" total))
   
-  ;;
+  ;; Day 6 A
+  
+  (defvar lights (make-array '(1000 1000)))
+(defconstant through 0)
+
+(defun turn-off (x1 y1 tt x2 y2)
+  (loop for x from x1 upto x2 do
+	(loop for y from y1 upto y2 do
+	      (setf (aref lights x y) nil))))
+
+(defun turn-on (x1 y1 tt x2 y2)
+  (loop for x from x1 upto x2 do
+	(loop for y from y1 upto y2 do
+	      (setf (aref lights x y) t))))
+
+(defun togg-e (x1 y1 tt x2 y2)
+  (loop for x from x1 upto x2 do
+	(loop for y from y1 upto y2 do
+	      (if (aref lights x y) 
+		  (setf (aref lights x y) nil)
+		(setf (aref lights x y) t)))))
+
+(with-open-file (stream "input6.txt")
+		(loop for line = (read-line stream nil)
+		      until (null line)
+		      do
+		      (setf (char line 4) #\-)
+		      (eval (read-from-string
+			     (concatenate 'string "("
+					  (substitute #\Space #\, line)
+					  ")")))))
+
+
+(format t "Day 6 A: ~a~%" (loop for x below 1000
+			        sum (loop for y below 1000 sum
+					  (if (aref lights x y)
+					      1
+					    0))))
+
+;; B
+
+(defvar lights (make-array '(1000 1000) :initial-element 0))
+(defconstant through 0)
+
+(defun turn-off (x1 y1 tt x2 y2)
+  (loop for x from x1 upto x2 do
+	(loop for y from y1 upto y2 do
+	      (unless (eq 0 (aref lights x y))
+		(decf (aref lights x y))))))
+
+(defun turn-on (x1 y1 tt x2 y2)
+  (loop for x from x1 upto x2 do
+	(loop for y from y1 upto y2 do
+	      (incf (aref lights x y)))))
+
+(defun togg-e (x1 y1 tt x2 y2)
+  (loop for x from x1 upto x2 do
+	(loop for y from y1 upto y2 do
+	      (setf (aref lights x y) (+ 2 (aref lights x y))))))
+
+(with-open-file (stream "input6.txt")
+		(loop for line = (read-line stream nil)
+		      until (null line)
+		      do
+		      (setf (char line 4) #\-)
+		      (eval (read-from-string
+			     (concatenate 'string "("
+					  (substitute #\Space #\, line)
+					  ")")))))
+
+
+(format t "Day 6 B: ~a~%" (loop for x below 1000
+			        sum (loop for y below 1000 sum
+					  (aref lights x y))))
+
+;;
