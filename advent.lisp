@@ -144,3 +144,28 @@
   (format t "Day 5 A: ~a~%" total))
 
 ;; B
+
+(defun part (pair line)
+  (cond ((search pair (subseq line 1))  t)
+	((> (length line) 3) (part (subseq line 0 2) (subseq line 1)))
+	(t nil)))
+
+(defun one-between (string)
+  (loop for i
+	when (equal (char string i) (char string (+ 2 i)))
+	return t
+	when (eq i (- (length string) 3))
+	return nil))
+
+(let ((total 0))
+  (with-open-file (stream "input5.txt")
+		  (loop for line = (read-line stream nil)
+			until (null line)
+			do
+			(when (and (part (subseq line 0 2) (subseq line 1))
+				   (one-between line))
+			  (incf total))))
+  
+  (format t "Day 5 B: ~a~%" total))
+  
+  ;;
