@@ -109,3 +109,38 @@
 ;;(need to read up on md5)
 
 ;; Day 5 A
+(defun 3-vowels-p (string)
+  (let ((i 0))
+    (map 'string #'(lambda (char)
+		     (when (find char "aeiou" :test #'equal)
+		       (incf i))
+		     char)
+	 string)
+    (>= i 3)))
+
+(defun same-twice-p (string)
+  (let ((b nil))
+    (with-input-from-string (stream string)
+			    (loop until (null (peek-char nil stream nil 'nil)) do
+				  (when (equal (read-char stream)
+					       (peek-char nil stream nil))
+				    (setf b t))))
+    b))
+
+(defun not-allowed-p (string)
+  (not (or (search "ab" string)
+	   (search "cd" string)
+	   (search "pq" string)
+	   (search "xy" string))))
+
+(let ((total 0))
+  (with-open-file (stream "input5.txt")
+		  (loop for line = (read-line stream nil)
+			until (null line) do
+			(when (and (3-vowels-p line)
+				   (same-twice-p line)
+				   (not-allowed-p line))
+			  (incf total))))
+  (format t "Day 5 A: ~a~%" total))
+
+;; B
