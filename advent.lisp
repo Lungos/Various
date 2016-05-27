@@ -243,6 +243,88 @@
 			        sum (loop for y below 1000 sum
 					  (aref lights x y))))
 
+;; Day 7 A
+(defconstant GB (make-hash-table :test #'equal))
+
+(defun 16bit (x)
+  (let ((bv (copy-seq #*0000000000000000)))
+    (loop for i downfrom (length bv)
+	  until (eq x 0) do
+	  (when (eq (floor (/ x (expt 2 i))) 1)
+	    (setf (bit bv i) 1)
+	    (setf x (- x (expt 2 i)))))
+    bv))
+
+(defun 16dec (x)
+  (loop for i across x
+	for j  sum
+	(* i (expt 2 j))))
+
+(defun bitnot (a)
+  (let ((x (val a)))
+    (16dec (bit-not (16bit x)))))
+    
+(defun bitor (a b)
+  (let ((x (val a))
+	(y (val b)))
+    (16dec (bit-ior (16bit x) (16bit y)))))
+
+(defun bitand (a b)
+  (let ((x (val a))
+	(y (val b)))
+    (16dec (bit-and (16bit x) (16bit y)))))
+
+(defun bitlshift (a i)
+  (let ((x (val a)))
+    (ash x i)))
+
+(defun bitrshift (a i)
+  (let ((x (val a)))
+    (ash x (- 0 i))))
+
+(defun val (a)
+  (cond ((numberp (gethash a GB)) (gethash a GB))
+	((numberp a) a)
+	(t (setf (gethash a GB) (eval (gethash a GB))))))
+
+(with-open-file (stream "input7.txt")
+		(loop for line = (read-line stream nil)
+		      until (null line)
+		      do	  
+		      (let ((value (read-from-string (concatenate 'string "("
+								  line
+								  ")"))))
+			(cond ((equal (car value) 'NOT) (setf (gethash (cadddr value) GB) `(bitnot (quote ,(cadr value)))))
+			      ((equal (cadr value) 'OR) (setf (gethash (nth 4 value) GB) `(bitor (quote ,(car value)) (quote ,(caddr value)))))
+			      ((equal (cadr value) 'AND) (setf (gethash (nth 4 value) GB) `(bitand (quote ,(car value)) (quote ,(caddr value)))))
+			      ((equal (cadr value) 'LSHIFT) (setf (gethash (nth 4 value) GB) `(bitlshift (quote ,(car value)) ,(caddr value))))
+			      ((equal (cadr value) 'RSHIFT) (setf (gethash (nth 4 value) GB) `(bitrshift (quote ,(car value)) ,(caddr value))))
+			      (t (setf (gethash (caddr value) GB) (car value)))))))
+
+(format t "Day 7 A: ~a~%" (val (gethash 'a GB)))
+
+;; B
+
+(with-open-file (stream "input7.txt")
+		(loop for line = (read-line stream nil)
+		      until (null line)
+		      do
+	  
+		      (let ((value (read-from-string (concatenate 'string "("
+								  line
+								  ")"))))
+			(cond ((equal (car value) 'NOT) (setf (gethash (cadddr value) GB) `(bitnot (quote ,(cadr value)))))
+			      ((equal (cadr value) 'OR) (setf (gethash (nth 4 value) GB) `(bitor (quote ,(car value)) (quote ,(caddr value)))))
+			      ((equal (cadr value) 'AND) (setf (gethash (nth 4 value) GB) `(bitand (quote ,(car value)) (quote ,(caddr value)))))
+			      ((equal (cadr value) 'LSHIFT) (setf (gethash (nth 4 value) GB) `(bitlshift (quote ,(car value)) ,(caddr value))))
+			      ((equal (cadr value) 'RSHIFT) (setf (gethash (nth 4 value) GB) `(bitrshift (quote ,(car value)) ,(caddr value))))
+			      (t (setf (gethash (caddr value) GB) (car value)))))))
+
+(setf (gethash 'b GB) 3176)
+(format t "Day 7 B: ~a~%" (val (gethash 'a GB)))
+
+
+
 ;; Day 17 A
 
 (setf total 0)
