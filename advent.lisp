@@ -243,4 +243,126 @@
 			        sum (loop for y below 1000 sum
 					  (aref lights x y))))
 
+;; Day 17 A
+
+(setf total 0)
+
+
+(defun run (list nbr sum)
+  (if (> nbr 0)
+      (loop for x in list
+	    for pos upto (- (length list) nbr)
+	    for l on list do
+	    (run (nthcdr (1+ pos) list) (1- nbr) (+ x sum)))
+    (when (eq sum 150)
+      (incf total))))
+
+
+(let ((input '(43 3 4 10 21 44 4 6 47 41 34 17 17 44 36 31 46 9 27 38)))
+  (loop for i from 1 to (length input) do
+	(run input i 0)))
+
+(format t "Day 17 A: ~a~%" total)
+
+;; B
+
+(setf total 0)
+
+(defun run (list nbr sum)
+  (if (> nbr 0)
+      (loop for x in list
+	    for pos upto (- (length list) nbr)
+	    for l on list do
+	    (run (nthcdr (1+ pos) list) (1- nbr) (+ x sum)))
+    (when (eq sum 150)
+      (incf total))))
+
+
+(let ((input '(43 3 4 10 21 44 4 6 47 41 34 17 17 44 36 31 46 9 27 38)))
+  (loop for i from 1 to (length input)
+	until (> total 0) do
+	(run input i 0)))
+
+(format t "Day 17 B: ~a~%" total)
+
+;; Day 18 A
+
+(defvar lights (make-array '(100 100) :initial-element 0))
+
+(with-open-file (stream "input18.txt")
+		(loop for line = (read-line stream nil)
+		      for x
+		      until (null line)
+		      do
+		      (loop for i across line
+			    for y do
+			    (when (equal i #\#)
+			      (setf (aref lights x y) 1)))))
+
+(loop for i below 100 do
+      (let ((temp (make-array '(100 100) :initial-element 0)))
+	(loop for x below 100 do
+	      (loop for y below 100 do
+		    (let ((val (loop for x1 from (1- x) upto (1+ x) sum
+				     (loop for y1 from (1- y) upto (1+ y) sum
+					   (if (or (< x1 0) (< y1 0)
+						   (> x1 99) (> y1 99)
+						   (and (eq x x1) (eq y y1)))
+					       0
+					     (aref lights x1 y1))))))
+		      (if (eq 0 (aref lights x y))
+			  (when (eq 3 val) (setf (aref temp x y) 1))
+			(when (or (eq 3 val) (eq 2 val)) (setf (aref temp x y) 1))))))
+	(setf lights temp))
+      (print i))
+
+
+(format t "Day 18 A: ~a~%" (loop for x below 100
+			        sum (loop for y below 100 sum
+					  (aref lights x y))))
+					  
+;; B
+
+(defvar lights (make-array '(100 100 101) :initial-element 0))
+
+(with-open-file (stream "input18.txt")
+		(loop for line = (read-line stream nil)
+		      for x
+		      until (null line)
+		      do
+		      (loop for i across line
+			    for y do
+			    (if (or (and (eq x 0) (eq y 0))
+				    (and (eq x 0) (eq y 99))
+				    (and (eq x 99) (eq y 0))
+				    (and (eq x 99) (eq y 99)))
+				(setf (aref lights x y 0) 1)
+			      (when (equal i #\#)
+				(setf (aref lights x y 0) 1))))))
+
+(loop for i below 100 do
+	(loop for x below 100 do
+	      (loop for y below 100 do
+		    (if (or (and (eq x 0) (eq y 0))
+			    (and (eq x 0) (eq y 99))
+			    (and (eq x 99) (eq y 0))
+			    (and (eq x 99) (eq y 99)))
+			(setf (aref lights x y (1+ i)) 1)		      
+		      (let ((val (loop for x1 from (1- x) upto (1+ x) sum
+				       (loop for y1 from (1- y) upto (1+ y) sum
+					     (if (or (< x1 0) (< y1 0)
+						     (> x1 99) (> y1 99)
+						     (and (eq x x1) (eq y y1)))
+						 0
+					       (aref lights x1 y1 i))))))
+			(if (eq 0 (aref lights x y i))
+			    (when (eq 3 val) (setf (aref lights x y (1+ i)) 1))
+			  (when (or (eq 3 val) (eq 2 val)) (setf (aref lights x y (1+ i)) 1))))))))
+
+
+
+(format t "Day 18 B: ~a~%" (loop for x below 100
+			        sum (loop for y below 100 sum
+					  (aref lights x y 100))))
+
 ;;
