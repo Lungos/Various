@@ -323,6 +323,33 @@
 (setf (gethash 'b GB) 3176)
 (format t "Day 7 B: ~a~%" (val (gethash 'a GB)))
 
+;; Day 8 A
+
+(format t "Day 8 A: ~a" (with-open-file (stream "input8.txt")
+					(loop for line = (read-line stream nil)
+					      until (null line) sum
+					      (- (length line)
+						 (loop for i until (>= i (length line)) sum
+						       (case (aref line i)
+							     (#\" 0)
+							     (#\\ (case (aref line (1+ i))
+									(#\" (incf i) 1)
+									(#\\ (incf i) 1)
+									(#\x (incf i 3) 1)))
+							     (t 1)))))))
+							     
+;; Day 8 B
+
+(format t "Day 8 B: ~a" (with-open-file (stream "input8.txt")
+					(loop for line = (read-line stream nil)
+					      until (null line) sum
+					      (- (+ (loop for i until (>= i (length line)) sum
+							  (case (aref line i)
+								(#\" 2)
+								(#\\ 2)
+								(t 1)))
+						    2)
+						 (length line)))))
 
 
 ;; Day 17 A
