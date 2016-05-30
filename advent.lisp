@@ -351,6 +351,232 @@
 						    2)
 						 (length line)))))
 
+;; Day 9 A
+
+(defconstant *distances* (make-hash-table :test #'equal))
+(setf AlphaCentauri 1)
+(setf Snowdin 2)
+(setf Tambi 3)
+(setf Faerun 4)
+(setf Norrath 5)
+(setf Straylight 6)
+(setf tristram 7)
+(setf arbre 8)
+(defstruct indiv fitness gene)
+(setf *random-state* (make-random-state t))
+
+(with-open-file (stream "input9.txt")
+		(loop for line = (read-line stream nil)
+		      until (null line) do
+		      (let* ((value (read-from-string (concatenate 'string "(" line ")")))
+			    (x (eval (car value)))
+			    (y (eval (caddr value))))
+			(setf (gethash (cons x y) *distances*) (nth 4 value))
+			(setf (gethash (cons y x) *distances*) (nth 4 value)))))
+
+
+
+(format t "Day 9 A: ~a" (let ((population nil)
+			      (struct '(1 2 3 4 5 6 8 7 8)))
+			  (labels ((fitness (gene)
+					    (loop for i below (1- (length gene)) sum
+						  (gethash (cons (nth i gene) (nth (1+ i) gene)) *distances*)))
+				   (rng-gene (list)
+					     (unless (null list)
+					       (let ((x (nth (random (length list)) list)))
+						 (cons x (rng-gene (remove x list)))))))
+				  (loop repeat 60 do
+					(let ((ind (make-indiv :gene (rng-gene struct))))
+					  (setf (indiv-fitness ind) (fitness (indiv-gene ind)))
+					  (push ind population)))
+				  (setf population (subseq (sort population #'< :key #'indiv-fitness) 0 30))
+				  (setf children nil)
+				  (loop repeat 50 do
+					(loop for i in population repeat 15 do
+					      (let ((child (make-indiv :gene
+								       (let* ((r1 (max (- (random (length struct)) 2) 0))
+									      (r2 (+ r1 (random (- (length struct) r1)))))
+									 (append (subseq (indiv-gene i) 0 r1)
+										 (reverse (subseq (indiv-gene i) r1 r2))
+										 (subseq (indiv-gene i) r2))))))
+						(setf (indiv-fitness child) (fitness (indiv-gene child)))
+						(push child children)))
+					(setf population (subseq (sort (append population children) #'< :key #'indiv-fitness) 0 30)))
+				  (indiv-fitness (car population)))))
+
+;; Day 9 B
+
+;; Same as A just sort for largest first instead of smallest first
+
+;; Day 10 A
+
+(defun elves-look (code nbr)
+  (if (eq nbr 0)
+      code
+    (let ((val nil)
+	  (i 0)
+	  (next ""))
+      (labels ((write-next (ch nbr) (concatenate 'string next (write-to-string nbr) (string ch))))
+	      (setf val (aref code 0))
+	      (loop for ch across code do
+		    (if (equal ch val)
+			(incf i)
+		      (progn (setf next (write-next val i))
+			     (setf i 1)
+			     (setf val ch))))
+	      (setf next (write-next val i)))
+      (elves-look next (1- nbr)))))
+
+(format t "Day 10 A: ~a" (length (elves-look (write-to-string 3113322113) 40)))
+
+;; Day 11 A
+
+(defun 3-incremental-p (string)
+  (let ((next 0)
+	(i 0))
+    (loop for ch across string do
+	  (if (eq next (char-code ch))
+	      (progn (incf i)
+		     (incf next))
+	    (progn (setf i 0)
+		   (setf next (1+ (char-code ch)))))
+	 (when (eq i 2) (return t)))))
+
+(defun same-twice-p (string)
+  (let ((nbr 0)
+	(pre-ch nil))
+    (loop for ch across string
+	  for i do
+	  (if (equal pre-ch ch)
+	      (progn (incf nbr)
+		     (setf pre-ch nil))
+	    (setf pre-ch ch)))
+    (if (> nbr 1)
+	t
+      nil)))
+
+(defun not-allowed-p (string)
+  (not (or (find #\i string :test #'equalp)
+	   (find #\o string :test #'equalp)
+	   (find #\l string :test #'equalp))))
+
+
+(format t "Day 11 A: ~a~%" (let ((string (copy-seq "hxbxwxba")))
+			     (loop until (and (3-incremental-p string)
+					      (same-twice-p string)
+					      (not-allowed-p string))
+				   do
+				   (loop for i downfrom (1- (length string)) do
+					 (if (eq 122 (char-code (aref string i)))
+					     (setf (aref string i) #\a)
+					   (setf (aref string i) (code-char (1+ (char-code (aref string i))))))
+					 until (not (equal (aref string i) #\a))))
+			     string))
+
+;; Day 11 B
+
+;; Same as A just change the string to be the next one after As result ie "hxbxxzaa"
+
+;; Day 12 A
+
+(format t "Day 12 A: ~a~%" (with-open-file (stream "input12.txt")
+					   (loop for line = (read-line stream nil)
+						 until (null line) sum
+						 (let* ((value (read-from-string
+								(concatenate 'string "("
+									     (substitute-if #\Space #'(lambda (x)
+													(or (equal x #\{)
+													    (equal x #\})
+													    (equal x #\[)
+													    (equal x #\])
+													    (equal x #\,)
+													    (equal x #\:)))
+											    line)
+									     ")"))))
+						   (loop for x in value sum
+							 (if (numberp x)
+							     x
+							   0))))))
+							   
+;; Day 13 A
+
+;;Very similar to 9, same as B but without the 0 in struct.
+
+;; Day 13 B
+
+(defconstant happiness (make-hash-table :test #'equal))
+(setf Alice 1)
+(setf Bob 2)
+(setf Carol 3)
+(setf David 4)
+(setf Eric 5)
+(setf Frank 6)
+(setf George 7)
+(setf Mallory 8)
+(defstruct indiv fitness gene)
+(setf *random-state* (make-random-state t))
+
+(defun lose (x) (- x))
+(defun gain (x) x)
+
+
+(with-open-file (stream "input13.txt")
+		(loop for line = (read-line stream nil)
+		      until (null line) do
+		      (let* ((value (read-from-string (concatenate 'string "(" (remove #\. line) ")")))
+			     (x (eval (car value)))
+			     (y (eval (nth 10 value)))
+			     (z (eval (list (nth 2 value) (nth 3 value)))))
+			(setf (gethash (cons x y) happiness) z))))
+
+(loop for i from 1 to 8 do
+      (setf (gethash (cons 0 i) happiness) 0)
+      (setf (gethash (cons i 0) happiness) 0))
+
+
+(format t "Day 13 A: ~a" (let ((population nil)
+			      (struct '(0 1 2 3 4 5 6 8 7 8)))
+			  (labels ((fitness (gene)
+					    (loop for i below (length gene) sum
+						  (+ (gethash (cons (nth i gene) (nth (mod (1+ i) (length gene)) gene)) happiness)
+						     (gethash (cons (nth (mod (1+ i) (length gene)) gene) (nth i gene)) happiness))))
+				   (rng-gene (list)
+					     (unless (null list)
+					       (let ((x (nth (random (length list)) list)))
+						 (cons x (rng-gene (remove x list)))))))
+				  (loop repeat 60 do
+					(let ((ind (make-indiv :gene (rng-gene struct))))
+					  (setf (indiv-fitness ind) (fitness (indiv-gene ind)))
+					  (push ind population)))
+				  (setf population (subseq (sort population #'> :key #'indiv-fitness) 0 30))
+				  (setf children nil)
+				  (loop repeat 50 do
+					(loop for i in population repeat 15 do
+					      (let ((child (make-indiv :gene
+								       (let* ((r1 (max (- (random (length struct)) 2) 0))
+									      (r2 (+ r1 (random (- (length struct) r1)))))
+									 (append (subseq (indiv-gene i) 0 r1)
+										 (reverse (subseq (indiv-gene i) r1 r2))
+										 (subseq (indiv-gene i) r2))))))
+						(setf (indiv-fitness child) (fitness (indiv-gene child)))
+						(push child children)))
+					(setf population (subseq (sort (append population children) #'> :key #'indiv-fitness) 0 30)))
+				  (indiv-fitness (car population)))))
+				  
+
+;; Day 14 A
+;; The code works for the examples but claims the answear i give is for someone ells, not me
+(format t "Day 14 A: ~a" (let ((reindeers nil))
+			   (with-open-file (stream "input14.txt")
+					   (loop for line = (read-line stream nil)
+						 until (null line) do
+						 (let ((value (read-from-string (concatenate 'string "(" (remove #\, line) ")"))))
+						   (push (list (car value) (cadddr value) (nth 6 value) (nth 13 value)) reindeers))))
+			   (eval (cons 'max (mapcar #'(lambda (x) (+ (* (cadr x) (caddr x) (floor (/ 2503 (+ (caddr x) (cadddr x)))))
+								     (* (caddr x) (min (cadr x) (mod (+ (caddr x) (cadddr x)) 2503)))))
+						    reindeers)))))
+						    
+
 
 ;; Day 17 A
 
