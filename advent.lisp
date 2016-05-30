@@ -577,6 +577,34 @@
 						    reindeers)))))
 						    
 
+;; Day 16 A
+
+;;same as B, just with all functions using eq
+
+;; Day 16 B
+
+(defun children (x) (eq x 3))
+(defun cats (x) (> x 7))
+(defun samoyeds (x) (eq x 2))
+(defun pomeranians (x) (< x 3))
+(defun akitas (x) (eq x 0))
+(defun vizslas (x) (eq x 0))
+(defun goldfish (x) (< x 5))
+(defun trees (x) (> x 3))
+(defun cars (x) (eq x 2))
+(defun perfumes (x) (eq x 1))
+
+(format t "Day 16 B: ~a~%" (with-open-file (stream "input16.txt")
+					   (loop for line = (read-line stream nil)
+						 until (null line) do
+						 (let* ((value (read-from-string
+								(concatenate 'string "("
+									     (substitute #\Space #\, (substitute #\Space #\: line))
+									     ")"))))
+						   (when (and (eval (list (nth 2 value) (nth 3 value)))
+							      (eval (list (nth 4 value) (nth 5 value)))
+							      (eval (list (nth 6 value) (nth 7 value))))
+						     (return (cadr value)))))))
 
 ;; Day 17 A
 
