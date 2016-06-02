@@ -598,7 +598,7 @@
 			(loop for i below (length ingredients) do
 			      (push (nth (+ 2 (* 2 i)) value) (aref ingredients i))))))
 
-(format t "~%Day 15 B: ~a" (eval (cons 'max (loop repeat 5 collect
+(format t "~%Day 15 B: ~a" #.(cons 'max (loop repeat 5 collect
 						  (let ((population nil))
 						    (labels ((fitness (gene)
 								      (let* ((a 0)
@@ -650,7 +650,7 @@
 								      (setf times i)))))
 						    
 						    
-						    (indiv-fitness (car population)))))))
+						    (indiv-fitness (car population))))))
 
 ;; Day 16 A
 
