@@ -576,6 +576,81 @@
 								     (* (caddr x) (min (cadr x) (mod (+ (caddr x) (cadddr x)) 2503)))))
 						    reindeers)))))
 						    
+;; Day 15 A
+
+;; structure more similar to 13 but with fitness more like 15B, but without counting calories
+;; Probably time to turn it into a macro
+
+;; Day 15 B
+
+(defstruct indiv fitness gene)
+(setf *random-state* (make-random-state t))
+
+
+(defconstant ingredients (make-array 5))
+(with-open-file (stream "input15.txt")
+		(loop for line = (read-line stream nil)
+		      for i
+		      until (null line) do
+		      (let* ((value (read-from-string (concatenate 'string "(" (remove-if #'(lambda (x) (or (equal x #\,)
+													    (equal x #\:)))
+											  line) ")"))))
+			(loop for i below (length ingredients) do
+			      (push (nth (+ 2 (* 2 i)) value) (aref ingredients i))))))
+
+(format t "~%Day 15 B: ~a" (eval (cons 'max (loop repeat 5 collect
+						  (let ((population nil))
+						    (labels ((fitness (gene)
+								      (let* ((a 0)
+									     (s (loop for i in gene sum i))
+									     (g (loop for x in gene
+										      for i collect
+										      (if (eq i 3)
+											  (- 100 a)
+											(progn (incf a (floor (* 100 (/ x s))))
+											       (floor (* 100 (/ x s)))))))
+									     (c (loop for i in g
+										      for x in (aref ingredients 4) sum
+										      (* i x))))
+									
+									(/ (eval (cons '* (loop for i across ingredients
+												repeat 4 collect
+												(loop for x in g
+												      for y in i sum
+												      (* x y)))))
+									   (expt 2 (abs (- 500 c)))))))
+							    (loop repeat 60 do
+								  (let ((ind (make-indiv :gene (loop repeat 4 collect (random 100)))))
+								    (setf (indiv-fitness ind) (fitness (indiv-gene ind)))
+								    (push ind population)))
+							    (setf population (subseq (sort population #'> :key #'indiv-fitness) 0 50))
+							    (setf children nil)
+							    (let ((best 0)
+								  (times 0))
+							      (loop for i until (> i (+ times 200)) do
+								    (loop for i in population repeat 30 do
+									  (let* ((mother (nth (random (length population)) population))
+										 (r (/ (random 100) 100))
+										 (child (make-indiv :gene
+												    (mapcar #'(lambda (x y) (floor (+ (* r x)
+																      (* (- 1 r) y))))
+													    (indiv-gene i)
+													    (indiv-gene mother)))))
+									    (setf (indiv-fitness child) (fitness (indiv-gene child)))
+									    (push child children)))
+								    (setf population (subseq (sort (append population children) #'> :key #'indiv-fitness) 0 30))
+								    (setf children nil)
+								    (loop for i in population
+									  for k do
+									  (when (and (> 5 (random 100)) (< 0 k))
+									    (setf (nth (random 4) (indiv-gene i)) (random 100))
+									    (setf (indiv-fitness i) (fitness (indiv-gene i)))))
+								    (when (> (indiv-fitness (car population)) best)
+								      (setf best (indiv-fitness (car population)))
+								      (setf times i)))))
+						    
+						    
+						    (indiv-fitness (car population)))))))
 
 ;; Day 16 A
 
@@ -728,4 +803,36 @@
 			        sum (loop for y below 100 sum
 					  (aref lights x y 100))))
 
-;;
+;; Day 19 A
+
+(defconstant db (make-hash-table :test #'equal))
+
+(let ((dict nil)
+      (input nil)
+      (total 0))
+  (with-open-file (stream "input19.txt")
+		  (loop for line = (read-line stream nil)
+			for i
+			until (null line) do
+			(when (and (> (length line) 6) (< (length line) 20))
+			  (let ((value `(,(remove #\Space (subseq line 0 2)) ,(remove #\Space (subseq line 5)))))
+			    (push (cons (string (car value)) (string (cadr value))) dict)))
+			(when (> (length line) 20)
+			  (setf input line))))
+
+  (labels ((replace (code start)
+		    (let ((temp (search (car code) input :start2 start)))
+
+		      (if temp
+			  (let ((str (concatenate 'string (subseq input 0 temp) (cdr code) (subseq input (+ temp (length (car code)))))))
+
+			    (unless (gethash str db)
+			      (incf total)
+			      (setf (gethash str db) t))
+			    (replace code (1+ temp)))
+			nil))))
+			  
+	  (loop for i in dict do
+		(replace i 0)))
+		        
+(format t "~%Day 19 A: ~a" total))
