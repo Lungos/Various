@@ -1,7 +1,7 @@
 # Various
 
 ga-ts: 
-First larger code i wrote in lisp, solves the tarveling postman problem using an genetic algorithm, on an i3 laptop took 7min to calculate for 200 points. Have setup for points all in a circle to see it got it correct, and random points.
+First larger code i wrote in lisp, solves the traveling postman problem using an genetic algorithm, on an i3 laptop took 7min to calculate for 200 points. Have setup for points all in a circle to see if it got it correct, and random points.
 uses an svg converter written by jl2 to show the points and route taken.
 
 GP:
