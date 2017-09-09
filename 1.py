@@ -44,4 +44,5 @@ for step in walks:
 				dic[(pos[0], pos[1])] = True
 
 print "Answer for 1A: " + distance(pos)
+print "and a new line"
 print "Answer for 1B: " + answerB
